@@ -105,6 +105,16 @@
     .flx{
         margin: auto;
         width: 30%;
+        max-height:300px;
+
+            display:flex;
+            flex-direction: column;
+            justify-content: center;
+            align-content: center;
+            align-items:center;
+            margin:auto;
+            max-width: 1000px;
+
 
     }
 </style>
