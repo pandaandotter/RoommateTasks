@@ -13,21 +13,20 @@
     let subscription: RealtimeChannel | null = null;
     let filteredTasks: Task[] = [];
     let userID = "";
-    $: filteredTasks = tasks.filter((task) =>{
-        if(task.done &&  !showHistory)return false;
-        if(filterMe && task.assignee!=userID)return false;
-        if(unasigned && task.assignee!=null)return false;
-        if(!task.title.toLowerCase().includes(searchQuery.toLowerCase()))return false;
+    $: filteredTasks = tasks.filter((task) => {
+        if (task.done && !showHistory) return false;
+        if (filterMe && task.assignee != userID) return false;
+        if (unasigned && task.assignee != null) return false;
+        if (!task.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
         return true;
     });
 
 
-
     onMount(async () => {
 
-        const { data: { user } } = await supa.auth.getUser();
+        const {data: {user}} = await supa.auth.getUser();
         // FETCH ALL ROWS
-        userID=user!.id;
+        userID = user!.id;
         const allUsersRes = await supa.from('profiles').select('*');
         if (allUsersRes.error) {
             alert("Error fetching users");
@@ -90,8 +89,8 @@
         subscription?.unsubscribe();
     });
 
-    async function serverDelete(task:Task){
-        const { error } = await supa
+    async function serverDelete(task: Task) {
+        const {error} = await supa
             .from('tasks')
             .delete()
             .eq('id', task.id)
@@ -159,10 +158,11 @@
         result.setDate(result.getDate() + offset);
         return result.toISOString();
     }
+
     let filterMe = false;
     let unasigned = false;
     let showHistory = false;
-    let searchQuery="";
+    let searchQuery = "";
 </script>
 
 <svelte:head>
@@ -174,16 +174,16 @@
 
 <button class="new" on:click={() => dialogueOpen=true}>New Task</button>
 <div class="params">
-<div>
-<input type="checkbox" bind:checked={filterMe} > Only Mine <br>
-    <input type="checkbox" bind:checked={unasigned} > Only Unassigned <br>
-    <input type="checkbox" bind:checked={showHistory} > Show History
-</div>
+    <div>
+        <label for=""></label>
+        <input type="checkbox" bind:checked={filterMe}> Only Mine <br>
+        <input type="checkbox" bind:checked={unasigned}> Only Unassigned <br>
+        <input type="checkbox" bind:checked={showHistory}> Show History
+    </div>
 
-
-<div>
-    <input type="search" bind:value={searchQuery} style="width:130px">
-</div>
+    <div>
+        <input type="search" placeholder="search..." bind:value={searchQuery} style="width:130px">
+    </div>
 </div>
 <br>
 <Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
@@ -195,11 +195,13 @@
     {#each filteredTasks as task}
         <tr style="opacity: {task.available ? '100%' : '50%'}">
             <td>
-                <input type="number" style="width: 3em" bind:value={task.points} on:change={()=>handleUpdateOfField(task, 'points')}>
+                <input type="number" style="width: 3em" bind:value={task.points}
+                       on:change={()=>handleUpdateOfField(task, 'points')}>
             </td>
             <td>
                 <div class="task-cont">
-                    <input class="title-input" type="text" bind:value={task.title} on:change={()=>handleUpdateOfField(task, 'title')}>
+                    <input class="title-input" type="text" bind:value={task.title}
+                           on:change={()=>handleUpdateOfField(task, 'title')}>
 
 
                     {#if task.dueDate}
@@ -228,8 +230,11 @@
                 </select>
             </td>
             <td>
-                <button on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
-                <button on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
+                {#if task.assignee === null}
+                    <button on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
+                {:else}
+                    <button on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
+                {/if}
                 <button class="del" on:click={()=>{serverDelete(task)}}>Delete</button>
             </td>
         </tr>
@@ -256,31 +261,32 @@
         align-items: center;
         justify-content: space-between;
     }
-    .new {
-        --c:  #229091; /* the color*/
-        position: relative;
-        left:150px;
-        bottom:100px;
-        height:40px;
-        width:100px;
 
+    .new {
+        --c: #229091; /* the color*/
+        position: relative;
+        left: 150px;
+        bottom: 100px;
+        height: 40px;
+        width: 100px;
 
 
         box-shadow: 0 0 0 .1em inset var(--c);
         --_g: linear-gradient(var(--c) 0 0) no-repeat;
-        background:
-                var(--_g) calc(var(--_p,0%) - 100%) 0%,
-                var(--_g) calc(200% - var(--_p,0%)) 0%,
-                var(--_g) calc(var(--_p,0%) - 100%) 100%,
-                var(--_g) calc(200% - var(--_p,0%)) 100%;
-        background-size: 50.5% calc(var(--_p,0%)/2 + .5%);
+        background: var(--_g) calc(var(--_p, 0%) - 100%) 0%,
+        var(--_g) calc(200% - var(--_p, 0%)) 0%,
+        var(--_g) calc(var(--_p, 0%) - 100%) 100%,
+        var(--_g) calc(200% - var(--_p, 0%)) 100%;
+        background-size: 50.5% calc(var(--_p, 0%) / 2 + .5%);
         outline-offset: .1em;
         transition: background-size .4s, background-position 0s .4s;
     }
+
     .new:hover {
         --_p: 100%;
         transition: background-position .4s, background-size 0s;
     }
+
     .new:active {
         box-shadow: 0 0 9em inset #0009;
         background-color: var(--c);
@@ -288,41 +294,42 @@
     }
 
     .del {
-        --c:  #cc0000; /* the color*/
+        --c: #cc0000; /* the color*/
         box-shadow: 0 0 0 .1em inset var(--c);
         --_g: linear-gradient(var(--c) 0 0) no-repeat;
-        background:
-                var(--_g) calc(var(--_p,0%) - 100%) 0%,
-                var(--_g) calc(200% - var(--_p,0%)) 0%,
-                var(--_g) calc(var(--_p,0%) - 100%) 100%,
-                var(--_g) calc(200% - var(--_p,0%)) 100%;
-        background-size: 50.5% calc(var(--_p,0%)/2 + .5%);
+        background: var(--_g) calc(var(--_p, 0%) - 100%) 0%,
+        var(--_g) calc(200% - var(--_p, 0%)) 0%,
+        var(--_g) calc(var(--_p, 0%) - 100%) 100%,
+        var(--_g) calc(200% - var(--_p, 0%)) 100%;
+        background-size: 50.5% calc(var(--_p, 0%) / 2 + .5%);
         outline-offset: .1em;
         transition: background-size .4s, background-position 0s .4s;
     }
+
     .del:hover {
         --_p: 100%;
         transition: background-position .4s, background-size 0s;
     }
+
     .del:active {
         box-shadow: 0 0 9em inset #0009;
         background-color: var(--c);
         color: #fff;
     }
 
-    .title-input{
+    .title-input {
         min-width: 0;
     }
 
 
-
-    .params{
-        display:flex;
+    .params {
+        display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-content: center;
-        align-items:center;
-        margin:auto;
-        max-width: 1000px;
+        align-items: center;
+        margin: auto;
+        max-width: 960px;
+        width: calc(100% - 32px);
     }
 </style>
