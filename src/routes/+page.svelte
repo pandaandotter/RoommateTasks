@@ -35,7 +35,7 @@
         console.log(allUsers);
 
 
-        const allTasksRes = await supa.from('tasks').select(`*`);
+        const allTasksRes = await supa.from('tasks').select(`*`).order('id', {ascending: true});
         console.log(allTasksRes)
         if (allTasksRes.error) return;
         tasks = allTasksRes.data;
@@ -99,9 +99,25 @@
         }
     }
 
+    async function handleUpdateOfField(task: Task, fieldName: string) {
+        const {data, error} = await supa
+            .from('tasks')
+            .update({[fieldName]: (task as never)[fieldName]})
+            .match({id: task.id});
+
+        if (error) {
+            console.error('Error updating record:', error);
+        } else {
+            console.log('Record updated successfully:', data);
+        }
+    }
+
     let dialogueOpen = false;
 
-    async function serverRequest(task: Task) {
+    async function onDone(task: Task) {
+        if (task.assignee === null) {
+            task.assignee = supa.auth.getUser();
+        }
         if (task.recurring) {
             const {error} = await supa
                 .from('tasks')
@@ -158,20 +174,28 @@ Dialogueopen: {dialogueOpen}
     <th>Task</th>
     <th>Assignee</th>
     {#each filteredTasks as task}
-        <tr>
+        <tr style="opacity: {task.available ? '100%' : '50%'}">
             <td>
-                {task.points}
-            </td>
-            <td class="task-cont">
-                <span>{task.title}</span>
-
-                {#if task.dueDate}
-                    <DueDate dueDate={task.dueDate}/>
-                {/if}
-
+                <input type="number" style="width: 3em" bind:value={task.points} on:change={()=>handleUpdateOfField(task, 'points')}>
             </td>
             <td>
-                <select bind:value={task.assignee} on:change="{()=>handleAssignment(task.id, task.assignee)}">
+                <div class="task-cont">
+                    <input class="title-input" type="text" bind:value={task.title} on:change={()=>handleUpdateOfField(task, 'title')}>
+
+
+                    {#if task.dueDate}
+                        <DueDate dueDate={task.dueDate}/>
+                    {:else}
+                        <label style="user-select: none">
+                            Available
+                            <input type="checkbox" id="available" bind:checked={task.available}
+                                   on:change={()=>handleUpdateOfField(task, 'available')}>
+                        </label>
+                    {/if}
+                </div>
+            </td>
+            <td>
+                <select bind:value={task.assignee} on:change="{()=>handleUpdateOfField(task, 'assignee')}">
                     {#each allUsers as user (user[1].id)}
                         {#if user[1].id === task.assignee}
                             <option value={user[1].id} selected>{user[1].first_name}</option>
@@ -181,10 +205,12 @@ Dialogueopen: {dialogueOpen}
                     {/each}
 
                     <option value={null} selected={task.assignee === null}>???</option>
+
                 </select>
             </td>
             <td>
-                <button on:click={()=>{serverRequest(task)}}>Done</button>
+                <button on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
+                <button on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
             </td>
         </tr>
     {/each}
@@ -195,17 +221,22 @@ Dialogueopen: {dialogueOpen}
     td {
         padding: 0.5rem;
         background-color: white;
+        height: 0;
     }
 
     table {
-        max-width: 80%;
+        max-width: calc(100% - 32px);
         width: 1000px;
         margin: auto;
     }
 
     .task-cont {
+        height: 100%;
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+    .title-input{
+        min-width: 0;
     }
 </style>
