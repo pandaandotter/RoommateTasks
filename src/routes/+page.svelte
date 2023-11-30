@@ -14,7 +14,6 @@
         client
             .from("tasks")
             .select("*")
-
             .then((res) => {
                 console.log(res)
                 if(res.error) {
@@ -36,6 +35,7 @@
                     table: 'tasks',
                 },
                 (payload) => {
+                    if(payload.errors)
                     console.log(payload)
                 }
             )
