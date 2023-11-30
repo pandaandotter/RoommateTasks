@@ -1,20 +1,20 @@
 <script lang="ts">
     import type {Task, User} from "$lib/db-types";
     import {onMount} from "svelte";
-    import {setupClient} from "$lib/setup-db.js";
 
     import Dialogue from "$lib/Dialogue.svelte";
+    import {supa} from "$lib/setup-db";
+    import DueDate from "$lib/DueDate.svelte";
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
 
-    const client = setupClient();
 
     onMount(async () => {
 
 
         // FETCH ALL ROWS
 
-        const allUsersRes = await client.from('profiles').select('*');
+        const allUsersRes = await supa.from('profiles').select('*');
         if (allUsersRes.error) {
             alert("Error fetching users");
             console.error(allUsersRes.error);
@@ -28,14 +28,14 @@
         console.log(allUsers);
 
 
-        const allTasksRes = await client.from('tasks').select(`*`);
+        const allTasksRes = await supa.from('tasks').select(`*`);
         console.log(allTasksRes)
         if (allTasksRes.error) return;
         tasks = allTasksRes.data;
 
 
         // SUBSCRIBE TO CHANGES
-        client
+        supa
             .channel('schema-db-changes')
             .on(
                 'postgres_changes',
@@ -57,7 +57,7 @@
         console.log(taskId, assigneeId);
 
         console.log({assignee: assigneeId})
-        const {data, error} = await client
+        const {data, error} = await supa
             .from('tasks')
             .update({assignee: assigneeId})
             .match({id: taskId});
@@ -78,10 +78,21 @@
 <h1>Tasks</h1>
 
 <table>
+    <th>Points</th>
+    <th>Task</th>
+    <th>Assignee</th>
     {#each tasks as task}
         <tr>
             <td>
-                {task.title}
+                {task.points}
+            </td>
+            <td class="task-cont">
+                <span>{task.title}</span>
+
+                {#if task.dueDate}
+                    <DueDate dueDate={task.dueDate} />
+                {/if}
+
             </td>
             <td>
                 <select bind:value={task.assignee} on:change="{()=>handleAssignment(task.id, task.assignee)}">
@@ -106,5 +117,10 @@
     td {
         padding: 0.5rem;
         background-color: white;
+    }
+    .task-cont {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 </style>

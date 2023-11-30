@@ -1,12 +1,13 @@
 <script lang="ts">
-    import {setupClient} from "$lib/setup-db";
+    import {supa} from "$lib/setup-db.js";
 
-    const client = setupClient();
+    let email = ''
+    let password = ''
 
     async function login() {
-        const res = await client.auth.signInWithPassword({
-            email: 'example@email.com',
-            password: 'example-password'
+        const res = await supa.auth.signInWithPassword({
+            email,
+            password,
         })
 
         if (res.error) {
@@ -23,8 +24,8 @@
 
 <h1>Log In</h1>
 
-<input type="email"/>
-<input type="password"/>
+<input type="email" bind:value={email}/>
+<input type="password" bind:value={password}/>
 
 <button on:click={login}>
     Submit
