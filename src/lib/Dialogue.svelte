@@ -66,26 +66,29 @@
 </script>
 
 {#if isOpen}
-    <div style="background-color: rgba(0,0,0, .2); width: 100%; height: 100vh; z-index: 100000; position: absolute; left: 0; top: 0;" on:click={()=>isOpen=false}></div>
-    <div style="z-index: 100001;" class="dialog" on:click={()=>{}}>
+    <button style="background-color: rgba(0,0,0, .2); width: 100%; height: 100vh; z-index: 100000; position: absolute; left: 0; top: 0;" on:click={()=>isOpen=false}></button>
+    <div style="z-index: 100001;" class="dialog">
         <div class="flx">
-
-            <input bind:value={title} bind:this={ref} placeholder="Title"/>
-            <br>
-            Points: <input type="number" bind:value={points} style="width: 35px;" >
-            <br>
-            <input type="checkbox" bind:checked={due}>due date?
+            <div>
+            <input class="form-control" bind:value={title} bind:this={ref} placeholder="Title"/>
+            </div>
+            <div>
+            Points: <input class="form-control" type="number" bind:value={points} style="width: 60px;" >
+            </div>
+            <div>
+            <input  type="checkbox" bind:checked={due}>Due Date?
             {#if due}
-                <input type="date" bind:value={date_due}>
+                <input class="form-control" type="date" bind:value={date_due}>
             {/if}
-            <br>
-            <input type="checkbox" bind:checked={recurring}>Reccuring?
+            </div>
+            <div>
+            <input  type="checkbox" bind:checked={recurring}>Reccuring?
             {#if recurring}
-                <input type="number" bind:value={after}>days
-            {/if}
-            <br>
+                <input class="form-control" type="number" bind:value={after} style="width: 60px;">days
+            {/if}</div>
+            <div>
             Assignee:
-            <select bind:value={assignee}>
+            <select class="form-control" bind:value={assignee}>
                 {#each allUsers as user (user[1].id)}
                     {#if user[1].id === task.assignee}
                         <option value={user[1].id} selected>{user[1].first_name}</option>
@@ -95,28 +98,41 @@
                 {/each}
                 <option value={null}>Unassigned</option>
             </select>
-            <br>
-            Available per default?
-            <input type="checkbox" bind:checked={available_default}>
+            </div>
+            <div>
+            <input  type="checkbox" bind:checked={available_default}>
+                Available per default?
+            </div>
+            <div>
 
-            <br>
-            <button id="submit" on:click={serverRequest}>Add Task</button>
-            <button id="cancel" on:click={() => isOpen = false}> Cancel</button>
+            <button class="form-control" id="submit" on:click={serverRequest}>Add Task</button>
+            <button class="form-control" id="cancel" on:click={() => isOpen = false}> Cancel</button>
+            </div>
 
         </div>
     </div>
 {/if}
 <style>
 .dialog {
-    background-color: white;
-    width: 500px;
+    background-color: #F4FFEF;
+    width: 300px;
     max-width: 100%;
-    height: 500px;
+
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     padding: 20px;
     box-shadow: 0 0 10px rgba(0,0,0, .5);
+
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+
+
 }
+
+
 </style>
