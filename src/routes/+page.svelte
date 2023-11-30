@@ -2,7 +2,6 @@
     import {createClient} from '@supabase/supabase-js'
     import type {Database, Task} from "$lib/db-types";
     import {onMount} from "svelte";
-
     let tasks: Task[] = [];
     onMount(() => {
         const client = createClient<Database>(
