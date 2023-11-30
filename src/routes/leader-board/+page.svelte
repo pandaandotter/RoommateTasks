@@ -1,9 +1,16 @@
+<!--suppress TypeScriptValidateTypes -->
 <script lang="ts">
 	import {createClient} from '@supabase/supabase-js'
 	import type {Database, Task} from "$lib/db-types";
 	import {onMount} from "svelte";
-	let hash = {};
 	let tasks: Task[] = [];
+	let completedArr: Pair[] = [];
+	let pointArr:Pair[]= [];
+
+	interface Pair {
+		name : string;
+		count : number;
+	}
 	onMount(() => {
 		const client = createClient<Database>(
 				'https://mwakhqeticwltzxnyajr.supabase.co',
@@ -23,24 +30,48 @@
 					}
 
 					tasks = res.data
+
+
+
+					let points= new Map();
+					let completed =new Map();
+					tasks.forEach(sum);
+					function sum(item:Task){
+						if(item.assignee!=null){
+							let str = item.assignee.toString();
+							if(!points.has(str)) {
+								points.set(str, 0);
+								completed.set(str, 0);
+							}
+							points.set(str,points.get(str)+item.points);
+							if(item.done){
+								completed.set(str,completed.get(str)+item.points);
+							}
+						}
+					}
+
+
+
+
+
+					for(const k of completed.entries()){
+						completedArr.push({name:k[0],count:k[1]});
+					}
+					for(const k of points.entries()){
+						pointArr.push({name:k[0],count:k[1]});
+					}
+					pointArr.sort((a,b)=>b.count-a.count);
+					completedArr.sort((a,b)=>b.count-a.count);
+					pointArr=pointArr;
+					completedArr=completedArr;
 				});
 
-		// SUBSCRIBE TO CHANGES
-		client
-				.channel('schema-db-changes')
-				.on(
-						'postgres_changes',
-						{
-							event: '*',
-							schema: 'public.tasks',
-							table: 'tasks',
-						},
-						(payload) => {
-							console.log(payload)
-						}
-				)
-				.subscribe()
+
+
+
+
 	})
+
 
 
 
@@ -52,14 +83,24 @@
 </svelte:head>
 
 
-<h1>Tasks</h1>
+<h1>Roommates Ranking</h1>
+
 
 {#each tasks as task}
 	<div class="row">
 		<h2>{task.title}</h2>
 	</div>
 {/each}
-```
+
+{#each pointArr as person}
+	<div class="row">
+		<h2>{person.name}</h2>
+		{person.count}
+	</div>
+{/each}
+
+
+
 
 <style>
 	.row {
