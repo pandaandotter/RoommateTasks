@@ -4,10 +4,10 @@
     let due = new Date(dueDate);
     let diff = due.getTime() - now.getTime();
 </script>
-<span style="padding-left: 5px">
+<div style="white-space: nowrap">
 {#if diff > 0}
     {Math.floor(diff / (1000 * 60 * 60 * 24))}
 {:else}
     0
 {/if} days left
-</span>
+</div>

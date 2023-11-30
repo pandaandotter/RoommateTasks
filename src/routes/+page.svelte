@@ -174,40 +174,50 @@
 
 <button class="new" on:click={() => dialogueOpen=true}>New Task</button>
 <div class="params">
-    <div>
-        <label for=""></label>
-        <input type="checkbox" bind:checked={filterMe}> Only Mine <br>
-        <input type="checkbox" bind:checked={unasigned}> Only Unassigned <br>
-        <input type="checkbox" bind:checked={showHistory}> Show History
+    <div style="display: flex;">
+        <label>
+            <input type="checkbox" bind:checked={filterMe}>
+            Only Mine
+        </label>
+        <label>
+            <input type="checkbox" bind:checked={unasigned}>
+            Only Unassigned
+        </label>
+        <label>
+            <input type="checkbox" bind:checked={showHistory}>
+            Show Tasks That Are Done
+        </label>
     </div>
 
     <div>
-        <input type="search" placeholder="search..." bind:value={searchQuery} style="width:130px">
+        <input type="search" class="form-control" placeholder="search..." bind:value={searchQuery} style="width:130px">
     </div>
 </div>
 <br>
 <Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
 
 <table>
-    <th>Points</th>
-    <th>Task</th>
-    <th>Assignee</th>
+    <tr>
+        <th>Points</th>
+        <th>Task</th>
+        <th>Assignee</th>
+    </tr>
     {#each filteredTasks as task}
         <tr style="opacity: {task.available ? '100%' : '50%'}">
             <td>
-                <input type="number" style="width: 3em" bind:value={task.points}
+                <input type="number" class="form-control" style="width: 5em" bind:value={task.points}
                        on:change={()=>handleUpdateOfField(task, 'points')}>
             </td>
             <td>
                 <div class="task-cont">
-                    <input class="title-input" type="text" bind:value={task.title}
+                    <input class="title-input form-control"type="text" bind:value={task.title}
                            on:change={()=>handleUpdateOfField(task, 'title')}>
 
 
                     {#if task.dueDate}
                         <DueDate dueDate={task.dueDate}/>
                     {:else}
-                        <label style="user-select: none">
+                        <label style="user-select: none; display: flex; flex-direction: row; gap: 4px">
                             Available
                             <input type="checkbox" id="available" bind:checked={task.available}
                                    on:change={()=>handleUpdateOfField(task, 'available')}>
@@ -216,7 +226,7 @@
                 </div>
             </td>
             <td>
-                <select bind:value={task.assignee} on:change="{()=>handleUpdateOfField(task, 'assignee')}">
+                <select class="form-control" bind:value={task.assignee} on:change="{()=>handleUpdateOfField(task, 'assignee')}">
                     {#each allUsers as user (user[1].id)}
                         {#if user[1].id === task.assignee}
                             <option value={user[1].id} selected>{user[1].first_name}</option>
@@ -231,11 +241,11 @@
             </td>
             <td>
                 {#if task.assignee === null}
-                    <button on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
+                    <button class="form-control" on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
                 {:else}
-                    <button on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
+                    <button class="form-control" on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
                 {/if}
-                <button class="del" on:click={()=>{serverDelete(task)}}>Delete</button>
+                <button class="form-control del" on:click={()=>{serverDelete(task)}}>Delete</button>
             </td>
         </tr>
     {/each}
@@ -253,6 +263,8 @@
         max-width: calc(100% - 32px);
         width: 1000px;
         margin: auto;
+        border-spacing: 4px;
+        border-collapse: separate;
     }
 
     .task-cont {
@@ -260,6 +272,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 8px
     }
 
     .new {
