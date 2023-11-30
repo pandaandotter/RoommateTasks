@@ -15,6 +15,7 @@ export interface Database {
                     available: boolean
                     available_by_default: boolean
                     createdAt: string
+                    done: boolean
                     dueDate: string | null
                     id: number
                     points: number | null
@@ -25,6 +26,7 @@ export interface Database {
                     available: boolean
                     available_by_default?: boolean
                     createdAt?: string
+                    done?: boolean
                     dueDate?: string | null
                     id?: number
                     points?: number | null
@@ -35,6 +37,7 @@ export interface Database {
                     available?: boolean
                     available_by_default?: boolean
                     createdAt?: string
+                    done?: boolean
                     dueDate?: string | null
                     id?: number
                     points?: number | null
@@ -145,6 +148,5 @@ export type Enums<
     : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
         ? Database["public"]["Enums"][PublicEnumNameOrOptions]
         : never
-
 
 export type Task = Database["public"]["Tables"]["tasks"]["Row"];
