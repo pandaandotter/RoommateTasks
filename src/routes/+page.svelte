@@ -1,59 +1,74 @@
-<script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+<script lang="ts">
+    import {createClient} from '@supabase/supabase-js'
+    import type {Database, Task} from "$lib/db-types";
+    import {onMount} from "svelte";
+
+    let tasks: Task[] = [];
+    onMount(() => {
+        const client = createClient<Database>(
+            'https://mwakhqeticwltzxnyajr.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWtocWV0aWN3bHR6eG55YWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDEzMzU3NTUsImV4cCI6MjAxNjkxMTc1NX0.EV_pDpb8F4popC49fGaN6dD3DqNuiakdrMaC7hq6oNc'
+        )
+
+        // FETCH ALL ROWS
+        client
+            .from("tasks")
+            .select("*")
+
+            .then((res) => {
+                console.log(res)
+                if(res.error) {
+                    console.log(res.error)
+                    return;
+                }
+
+                tasks = res.data
+            });
+
+        // SUBSCRIBE TO CHANGES
+        client
+            .channel('schema-db-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public.tasks',
+                    table: 'tasks',
+                },
+                (payload) => {
+                    console.log(payload)
+                }
+            )
+            .subscribe()
+    })
+
+
+
 </script>
 
 <svelte:head>
-	<title>Home</title>
-	<meta name="description" content="Svelte demo app" />
+    <title>Home</title>
+    <meta name="description" content="Svelte demo app"/>
 </svelte:head>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
 
-		to your new<br />SvelteKit app
-	</h1>
+<h1>Tasks</h1>
 
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
+{#each tasks as task}
+    <div class="row">
+        <h2>{task.title}</h2>
+    </div>
+{/each}
+```
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        background-color: white;
+        margin-bottom: 10px;
+    }
 </style>
