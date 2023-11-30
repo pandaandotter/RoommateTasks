@@ -1,19 +1,20 @@
 <script lang="ts">
-    import {createClient} from '@supabase/supabase-js'
-    import type {Database, Task, User} from "$lib/db-types";
+    import type {Task, User} from "$lib/db-types";
     import {onMount} from "svelte";
+
     import Dialogue from "$lib/Dialogue.svelte";
+    import {supa} from "$lib/setup-db";
+    import DueDate from "$lib/DueDate.svelte";
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
+
+
     onMount(async () => {
-        const client = createClient<Database>(
-            'https://mwakhqeticwltzxnyajr.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13YWtocWV0aWN3bHR6eG55YWpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDEzMzU3NTUsImV4cCI6MjAxNjkxMTc1NX0.EV_pDpb8F4popC49fGaN6dD3DqNuiakdrMaC7hq6oNc'
-        )
+
 
         // FETCH ALL ROWS
 
-        const allUsersRes = await client.from('profiles').select('*');
+        const allUsersRes = await supa.from('profiles').select('*');
         if (allUsersRes.error) {
             alert("Error fetching users");
             console.error(allUsersRes.error);
@@ -26,20 +27,15 @@
 
         console.log(allUsers);
 
-        const allTasksRes = await client.from('tasks')
-            .select(`*`)
-            .then((res) => {
-                console.log(res)
-                if (res.error) {
-                    console.log(res.error)
-                    return;
-                }
 
-                tasks = res.data as never as Task[];
-            });
+        const allTasksRes = await supa.from('tasks').select(`*`);
+        console.log(allTasksRes)
+        if (allTasksRes.error) return;
+        tasks = allTasksRes.data;
+
 
         // SUBSCRIBE TO CHANGES
-        client
+        supa
             .channel('schema-db-changes')
             .on(
                 'postgres_changes',
@@ -56,6 +52,22 @@
             .subscribe()
     })
 
+
+    async function handleAssignment(taskId: number, assigneeId: string | null) {
+        console.log(taskId, assigneeId);
+
+        console.log({assignee: assigneeId})
+        const {data, error} = await supa
+            .from('tasks')
+            .update({assignee: assigneeId})
+            .match({id: taskId});
+
+        if (error) {
+            console.error('Error updating record:', error);
+        } else {
+            console.log('Record updated successfully:', data);
+        }
+    }
 </script>
 
 <svelte:head>
@@ -66,15 +78,24 @@
 <h1>Tasks</h1>
 
 <table>
+    <th>Points</th>
+    <th>Task</th>
+    <th>Assignee</th>
     {#each tasks as task}
         <tr>
             <td>
-                {task.title}
+                {task.points}
+            </td>
+            <td class="task-cont">
+                <span>{task.title}</span>
+
+                {#if task.dueDate}
+                    <DueDate dueDate={task.dueDate} />
+                {/if}
+
             </td>
             <td>
-                {task.assignee ? allUsers.get(task.assignee)?.first_name : "Unassigned"}
-
-                <select>// specify key
+                <select bind:value={task.assignee} on:change="{()=>handleAssignment(task.id, task.assignee)}">
                     {#each allUsers as user (user[1].id)}
                         {#if user[1].id === task.assignee}
                             <option value={user[1].id} selected>{user[1].first_name}</option>
@@ -82,7 +103,8 @@
                             <option value={user[1].id}>{user[1].first_name}</option>
                         {/if}
                     {/each}
-                    <option value={null} >Unassigned</option>
+
+                    <option value={null} selected={task.assignee === null}>???</option>
                 </select>
             </td>
         </tr>
@@ -91,16 +113,14 @@
 
 <Dialogue/>
 
-```
-
 <style>
-    .row {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0 1rem;
+    td {
+        padding: 0.5rem;
         background-color: white;
-        margin-bottom: 10px;
+    }
+    .task-cont {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 </style>
