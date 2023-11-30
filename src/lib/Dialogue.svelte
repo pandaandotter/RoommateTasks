@@ -64,7 +64,7 @@
     <br>
     <input type="checkbox" bind:checked={due}>due date?
     {#if due}
-        <input type="date" bind:value={date_due}>Due Date
+        <input type="date" bind:value={date_due}>
     {/if}
     <br>
     <input type="checkbox" bind:checked={recurring}>Reccuring?
