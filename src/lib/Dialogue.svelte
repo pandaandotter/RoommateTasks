@@ -18,12 +18,13 @@
                 done: false,
                 points: points,
                 title: title,
-                recurrenceInterval:after
+                recurrenceInterval:after,
+                recurring:reccuring
             })
 
 
         if (error) {
-            alert("Error fetching users");
+            alert("Error adding task");
             console.error(error);
             return;
         }

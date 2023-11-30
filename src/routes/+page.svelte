@@ -69,6 +69,49 @@
         }
     }
     let dialogueOpen=false;
+
+
+
+    async function serverRequest(task:Task){
+        if(task.recurring) {
+            const {error}= await supa
+                .from('tasks')
+                .insert({
+                    assignee: null,
+                    available: task.available,
+                    availableByDefault: task.availableByDefault,
+                    dueDate: (task.dueDate==null)?null:offsetDate(task.recurrenceInterval),
+                    done: false,
+                    points: task.points,
+                    title: task.title,
+                    recurrenceInterval: task.recurrenceInterval
+                })
+
+
+            if (error) {
+                alert("Error adding reccuring task");
+                console.error(error);
+                return;
+            }
+        }
+        const { error } = await supa
+            .from('tasks')
+            .update({ done : true })
+            .eq('id', task.id)
+        if (error) {
+            alert("Error updating to done");
+            console.error(error);
+            return;
+        }
+
+
+    }
+
+    function offsetDate(offset:number){
+            let result = new Date();
+            result.setDate(result.getDate()+offset);
+            return result.toISOString();
+    }
 </script>
 
 <svelte:head>
@@ -107,6 +150,9 @@
 
                     <option value={null} selected={task.assignee === null}>???</option>
                 </select>
+            </td>
+            <td>
+                <button on:click={()=>{serverRequest(task)}}>Done</button>
             </td>
         </tr>
     {/each}
