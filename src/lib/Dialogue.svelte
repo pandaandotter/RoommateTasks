@@ -54,12 +54,13 @@
     let assignee: string | null = null;
     let available_default = true;
 </script>
-<dialog id="myFirstDialog" open={isOpen} class="dia">
 
+<dialog id="myFirstDialog" open={isOpen} class="dia">
+    <div class="flx">
 
     <textarea bind:value={title}></textarea>
     <br>
-    Points:<input type="number" bind:value={points}>
+        Points: <input type="number" bind:value={points} style="width: 35px;">
     <br>
     <input type="checkbox" bind:checked={due}>due date?
     {#if due}
@@ -88,14 +89,22 @@
 
     <br>
     <button id="submit" on:click={serverRequest}>Add Task</button>
-    <button id="cancel" on:click={() => isOpen = false}> cancel</button>
+    <button id="cancel" on:click={() => isOpen = false}> Cancel</button>
+
+    </div>
 </dialog>
 
 
 <style>
     .dia {
         width: 50%;
+        height:200px;
         background-color: #F4FFEF;
         border: 1px dotted black;
+    }
+    .flx{
+        margin: auto;
+        width: 30%;
+
     }
 </style>

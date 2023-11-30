@@ -82,7 +82,15 @@
         subscription?.unsubscribe();
     });
 
-
+    async function serverDelete(task:Task){
+        const { error } = await supa
+            .from('tasks')
+            .delete()
+            .eq('id', task.id)
+        if (error) {
+            alert("Error deleting task");
+        }
+    }
     async function handleAssignment(taskId: number, assigneeId: string | null) {
         console.log(taskId, assigneeId);
 
@@ -150,7 +158,7 @@
 
 <h1>Tasks</h1>
 
-<button on:click={() => dialogueOpen=true}>New Task</button>
+<button class="new" on:click={() => dialogueOpen=true}>New Task</button>
 <Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
 Dialogueopen: {dialogueOpen}
 <table>
@@ -185,6 +193,7 @@ Dialogueopen: {dialogueOpen}
             </td>
             <td>
                 <button on:click={()=>{serverRequest(task)}}>Done</button>
+                <button class="del" on:click={()=>{serverDelete(task)}}>Delete</button>
             </td>
         </tr>
     {/each}
@@ -208,4 +217,58 @@ Dialogueopen: {dialogueOpen}
         align-items: center;
         justify-content: space-between;
     }
+    .new {
+        --c:  #229091; /* the color*/
+        position: relative;
+        left:150px;
+        bottom:100px;
+        height:40px;
+        width:100px;
+
+
+
+        box-shadow: 0 0 0 .1em inset var(--c);
+        --_g: linear-gradient(var(--c) 0 0) no-repeat;
+        background:
+                var(--_g) calc(var(--_p,0%) - 100%) 0%,
+                var(--_g) calc(200% - var(--_p,0%)) 0%,
+                var(--_g) calc(var(--_p,0%) - 100%) 100%,
+                var(--_g) calc(200% - var(--_p,0%)) 100%;
+        background-size: 50.5% calc(var(--_p,0%)/2 + .5%);
+        outline-offset: .1em;
+        transition: background-size .4s, background-position 0s .4s;
+    }
+    .new:hover {
+        --_p: 100%;
+        transition: background-position .4s, background-size 0s;
+    }
+    .new:active {
+        box-shadow: 0 0 9e9q inset #0009;
+        background-color: var(--c);
+        color: #fff;
+    }
+
+    .del {
+        --c:  #cc0000; /* the color*/
+        box-shadow: 0 0 0 .1em inset var(--c);
+        --_g: linear-gradient(var(--c) 0 0) no-repeat;
+        background:
+                var(--_g) calc(var(--_p,0%) - 100%) 0%,
+                var(--_g) calc(200% - var(--_p,0%)) 0%,
+                var(--_g) calc(var(--_p,0%) - 100%) 100%,
+                var(--_g) calc(200% - var(--_p,0%)) 100%;
+        background-size: 50.5% calc(var(--_p,0%)/2 + .5%);
+        outline-offset: .1em;
+        transition: background-size .4s, background-position 0s .4s;
+    }
+    .del:hover {
+        --_p: 100%;
+        transition: background-position .4s, background-size 0s;
+    }
+    .del:active {
+        box-shadow: 0 0 9e9q inset #0009;
+        background-color: var(--c);
+        color: #fff;
+    }
+
 </style>
