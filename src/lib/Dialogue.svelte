@@ -2,11 +2,10 @@
     import type {Task, User} from "$lib/db-types";
     import {supa} from "$lib/setup-db.js";
 
-    export let shows = false;
-
+    export let isOpen = false;
 
     async function serverRequest() {
-        shows = false;
+        isOpen = false;
 
         const {error} = await supa
             .from('tasks')
@@ -18,8 +17,8 @@
                 done: false,
                 points: points,
                 title: title,
-                recurrenceInterval:after,
-                recurring:reccuring
+                recurrenceInterval: after,
+                recurring: recurring
             })
 
 
@@ -29,10 +28,6 @@
             return;
         }
 
-    }
-
-    function hide() {
-        shows = false;
     }
 
     export let allUsers: Map<string, User>;
@@ -45,25 +40,21 @@
         dueDate: null,
         id: 1,
         points: 0,
-        title: null,
-        recurrenceInterval:7,
-        recurring:false
+        title: "",
+        recurrenceInterval: 7,
+        recurring: false
     };
 
     let title = "title";
     let points = 0;
-    let  due = false;
+    let due = false;
     let date_due: string | null = null;
-    let reccuring = false;
+    let recurring = false;
     let after = 0;
-    let assignee : string|null= null;
+    let assignee: string | null = null;
     let available_default = true;
 </script>
-
-export let allUs
-
-<dialog id="myFirstDialog" open={shows} class="dia">
-
+<dialog id="myFirstDialog" open={isOpen} class="dia">
 
 
     <textarea bind:value={title}></textarea>
@@ -72,11 +63,11 @@ export let allUs
     <br>
     <input type="checkbox" bind:checked={due}>due date?
     {#if due}
-    <input type="date" bind:value={date_due}>Due Date
+        <input type="date" bind:value={date_due}>Due Date
     {/if}
     <br>
-    <input type="checkbox" bind:checked={reccuring}>Reccuring?
-    {#if reccuring}
+    <input type="checkbox" bind:checked={recurring}>Reccuring?
+    {#if recurring}
         <input type="number" bind:value={after}>days
     {/if}
     <br>
@@ -97,17 +88,14 @@ export let allUs
 
     <br>
     <button id="submit" on:click={serverRequest}>Add Task</button>
-    <button id="cancel" on:click={hide}> cancel</button>
+    <button id="cancel" on:click={() => isOpen = false}> cancel</button>
 </dialog>
 
 
-
-
 <style>
-    .dia{
-        width:50%;
-        background-color:
-                #F4FFEF;
-        border:1px dotted black;
+    .dia {
+        width: 50%;
+        background-color: #F4FFEF;
+        border: 1px dotted black;
     }
 </style>

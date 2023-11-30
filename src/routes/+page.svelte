@@ -1,12 +1,19 @@
 <script lang="ts">
     import type {Task, User} from "$lib/db-types";
-    import {onMount} from "svelte";
+    import {onDestroy, onMount} from "svelte";
 
     import Dialogue from "$lib/Dialogue.svelte";
     import {supa} from "$lib/setup-db";
     import DueDate from "$lib/DueDate.svelte";
+    import type {RealtimeChannel} from "@supabase/supabase-js";
+
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
+
+    let subscription: RealtimeChannel | null = null;
+    let filteredTasks: Task[] = [];
+
+    $: filteredTasks = tasks.filter((task) => !task.done);
 
     onMount(async () => {
 
@@ -23,7 +30,7 @@
         allUsersRes.data.forEach((user) => {
             allUsers.set(user.id, user);
         });
-        allUsers= allUsers;
+        allUsers = allUsers;
 
         console.log(allUsers);
 
@@ -35,22 +42,45 @@
 
 
         // SUBSCRIBE TO CHANGES
-        supa
+        subscription = supa
             .channel('schema-db-changes')
             .on(
                 'postgres_changes',
                 {
                     event: '*',
-                    schema: 'public.tasks',
+                    schema: 'public',
                     table: 'tasks',
                 },
                 (payload) => {
-                    if (payload.errors)
-                        console.log(payload)
+
+                    if (payload.errors) {
+                        console.log(payload);
+                        return;
+                    }
+
+                    if (payload.eventType === "UPDATE") {
+                        const updatedTask = payload.new as never as Task;
+                        const index = tasks.findIndex((task) => task.id === updatedTask.id);
+                        tasks[index] = updatedTask;
+                        tasks = tasks;
+                    } else if (payload.eventType === "DELETE") {
+                        const deletedTask = payload.old as never as Task;
+                        const index = tasks.findIndex((task) => task.id === deletedTask.id);
+                        tasks.splice(index, 1);
+                        tasks = tasks;
+                    } else if (payload.eventType === "INSERT") {
+                        const newTask = payload.new as never as Task;
+                        tasks.push(newTask);
+                        tasks = tasks;
+                    }
                 }
             )
-            .subscribe()
+            .subscribe();
     })
+
+    onDestroy(() => {
+        subscription?.unsubscribe();
+    });
 
 
     async function handleAssignment(taskId: number, assigneeId: string | null) {
@@ -68,19 +98,18 @@
             console.log('Record updated successfully:', data);
         }
     }
-    let dialogueOpen=false;
 
+    let dialogueOpen = false;
 
-
-    async function serverRequest(task:Task){
-        if(task.recurring) {
-            const {error}= await supa
+    async function serverRequest(task: Task) {
+        if (task.recurring) {
+            const {error} = await supa
                 .from('tasks')
                 .insert({
                     assignee: null,
                     available: task.available,
                     availableByDefault: task.availableByDefault,
-                    dueDate: (task.dueDate==null)?null:offsetDate(task.recurrenceInterval),
+                    dueDate: (task.dueDate == null) ? null : offsetDate(task.recurrenceInterval),
                     done: false,
                     points: task.points,
                     title: task.title,
@@ -94,9 +123,9 @@
                 return;
             }
         }
-        const { error } = await supa
+        const {error} = await supa
             .from('tasks')
-            .update({ done : true })
+            .update({done: true})
             .eq('id', task.id)
         if (error) {
             alert("Error updating to done");
@@ -107,10 +136,10 @@
 
     }
 
-    function offsetDate(offset:number){
-            let result = new Date();
-            result.setDate(result.getDate()+offset);
-            return result.toISOString();
+    function offsetDate(offset: number) {
+        let result = new Date();
+        result.setDate(result.getDate() + offset);
+        return result.toISOString();
     }
 </script>
 
@@ -121,11 +150,14 @@
 
 <h1>Tasks</h1>
 
+<button on:click={() => dialogueOpen=true}>New Task</button>
+<Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
+Dialogueopen: {dialogueOpen}
 <table>
     <th>Points</th>
     <th>Task</th>
     <th>Assignee</th>
-    {#each tasks as task}
+    {#each filteredTasks as task}
         <tr>
             <td>
                 {task.points}
@@ -134,7 +166,7 @@
                 <span>{task.title}</span>
 
                 {#if task.dueDate}
-                    <DueDate dueDate={task.dueDate} />
+                    <DueDate dueDate={task.dueDate}/>
                 {/if}
 
             </td>
@@ -157,8 +189,6 @@
         </tr>
     {/each}
 </table>
-<button on:click={()=>{dialogueOpen=!dialogueOpen;}}>New Task</button>
-<Dialogue allUsers={allUsers} shows={dialogueOpen}/>
 
 
 <style>
@@ -166,6 +196,13 @@
         padding: 0.5rem;
         background-color: white;
     }
+
+    table {
+        max-width: 80%;
+        width: 1000px;
+        margin: auto;
+    }
+
     .task-cont {
         display: flex;
         align-items: center;
