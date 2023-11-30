@@ -12,14 +12,21 @@
 
     let subscription: RealtimeChannel | null = null;
     let filteredTasks: Task[] = [];
+    let userID = "";
+    $: filteredTasks = tasks.filter((task) =>{
+        if(!task.done &&  !showHistory)return false;
+        if(filterMe && task.assignee!=userID)return false;
+        if(unasigned && task.assignee!=null)return false;
+        return true;
+    });
 
-    $: filteredTasks = tasks.filter((task) => !task.done);
+
 
     onMount(async () => {
 
-
+        const { data: { user } } = await supa.auth.getUser();
         // FETCH ALL ROWS
-
+        userID=user!.id;
         const allUsersRes = await supa.from('profiles').select('*');
         if (allUsersRes.error) {
             alert("Error fetching users");
@@ -151,6 +158,9 @@
         result.setDate(result.getDate() + offset);
         return result.toISOString();
     }
+    let filterMe = false;
+    let unasigned = false;
+    let showHistory = false;
 </script>
 
 <svelte:head>
@@ -161,8 +171,13 @@
 <h1>Tasks</h1>
 
 <button class="new" on:click={() => dialogueOpen=true}>New Task</button>
+<div style="position:relative;left:130px;">
+<input type="checkbox" bind:checked={filterMe} > Only Mine <br>
+    <input type="checkbox" bind:checked={unasigned} > Only Unassigned <br>
+    <input type="checkbox" bind:checked={showHistory} > Show History
+</div>
 <Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
-Dialogueopen: {dialogueOpen}
+
 <table>
     <th>Points</th>
     <th>Task</th>
