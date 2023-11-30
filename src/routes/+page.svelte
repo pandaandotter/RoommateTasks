@@ -14,9 +14,10 @@
     let filteredTasks: Task[] = [];
     let userID = "";
     $: filteredTasks = tasks.filter((task) =>{
-        if(!task.done &&  !showHistory)return false;
+        if(task.done &&  !showHistory)return false;
         if(filterMe && task.assignee!=userID)return false;
         if(unasigned && task.assignee!=null)return false;
+        if(!task.title.toLowerCase().includes(searchQuery.toLowerCase()))return false;
         return true;
     });
 
@@ -161,6 +162,7 @@
     let filterMe = false;
     let unasigned = false;
     let showHistory = false;
+    let searchQuery="";
 </script>
 
 <svelte:head>
@@ -171,11 +173,19 @@
 <h1>Tasks</h1>
 
 <button class="new" on:click={() => dialogueOpen=true}>New Task</button>
-<div style="position:relative;left:130px;">
+<div class="params">
+<div>
 <input type="checkbox" bind:checked={filterMe} > Only Mine <br>
     <input type="checkbox" bind:checked={unasigned} > Only Unassigned <br>
     <input type="checkbox" bind:checked={showHistory} > Show History
 </div>
+
+
+<div>
+    <input type="search" bind:value={searchQuery} style="width:130px">
+</div>
+</div>
+<br>
 <Dialogue allUsers={allUsers} bind:isOpen={dialogueOpen}/>
 
 <table>
@@ -302,5 +312,17 @@
 
     .title-input{
         min-width: 0;
+    }
+
+
+
+    .params{
+        display:flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-content: center;
+        align-items:center;
+        margin:auto;
+        max-width: 1000px;
     }
 </style>
