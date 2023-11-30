@@ -3,6 +3,7 @@
     import {onMount} from "svelte";
     import {setupClient} from "$lib/setup-db.js";
 
+    import Dialogue from "$lib/Dialogue.svelte";
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
 
@@ -98,6 +99,8 @@
         </tr>
     {/each}
 </table>
+
+<Dialogue/>
 
 <style>
     td {
