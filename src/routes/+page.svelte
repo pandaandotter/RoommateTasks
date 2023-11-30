@@ -8,7 +8,6 @@
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
 
-
     onMount(async () => {
 
 
@@ -24,6 +23,7 @@
         allUsersRes.data.forEach((user) => {
             allUsers.set(user.id, user);
         });
+        allUsers= allUsers;
 
         console.log(allUsers);
 
@@ -68,6 +68,7 @@
             console.log('Record updated successfully:', data);
         }
     }
+    let dialogueOpen=false;
 </script>
 
 <svelte:head>
@@ -110,8 +111,9 @@
         </tr>
     {/each}
 </table>
+<button on:click={()=>{dialogueOpen=!dialogueOpen;}}>New Task</button>
+<Dialogue allUsers={allUsers} shows={dialogueOpen}/>
 
-<Dialogue/>
 
 <style>
     td {

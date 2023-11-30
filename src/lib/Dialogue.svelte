@@ -1,13 +1,25 @@
 <script lang="ts" xmlns="http://www.w3.org/1999/html">
     import type {Task, User} from "$lib/db-types";
+    import {supa} from "$lib/setup-db.js";
 
-    let shows = false;
-    async function serverRequest(){
-        shows=false;
+    export let shows = false;
 
-        const { error } = await supabase
+
+    async function serverRequest() {
+        shows = false;
+
+        const {error} = await supa
             .from('tasks')
-            .insert({assignee: assignee,     available: available_default,     availableByDefault: available_default,    dueDate:date_due,        points: points,     title:title})
+            .insert({
+                assignee: assignee,
+                available: available_default,
+                availableByDefault: available_default,
+                dueDate: date_due,
+                done: false,
+                points: points,
+                title: title,
+                recurrenceInterval:after
+            })
 
 
         if (error) {
@@ -17,10 +29,25 @@
         }
 
     }
-    function hide(){
-        shows=false;}
-    export let allUsers : Map<string,User>;
-    let task: Task = {assignee: null,     available: false,     availableByDefault: false,     createdAt: "ah",     done: false,     dueDate:null,     id: 1,     points: 0,     title: null};
+
+    function hide() {
+        shows = false;
+    }
+
+    export let allUsers: Map<string, User>;
+    let task: Task = {
+        assignee: null,
+        available: false,
+        availableByDefault: false,
+        createdAt: "ah",
+        done: false,
+        dueDate: null,
+        id: 1,
+        points: 0,
+        title: null,
+        recurrenceInterval:7,
+        recurring:false
+    };
 
     let title = "title";
     let points = 0;
@@ -39,17 +66,21 @@ export let allUs
 
 
     <textarea bind:value={title}></textarea>
+    <br>
     Points:<input type="number" bind:value={points}>
-    <input type="checkbox" bind:value={due}>due date?
+    <br>
+    <input type="checkbox" bind:checked={due}>due date?
     {#if due}
     <input type="date" bind:value={date_due}>Due Date
     {/if}
-    <input type="checkbox" bind:value={reccuring}>Reccuring?
+    <br>
+    <input type="checkbox" bind:checked={reccuring}>Reccuring?
     {#if reccuring}
         <input type="number" bind:value={after}>days
     {/if}
+    <br>
     Assignee:
-    <select bind:value={assignee}>// specify key
+    <select bind:value={assignee}>
         {#each allUsers as user (user[1].id)}
             {#if user[1].id === task.assignee}
                 <option value={user[1].id} selected>{user[1].first_name}</option>
@@ -57,12 +88,13 @@ export let allUs
                 <option value={user[1].id}>{user[1].first_name}</option>
             {/if}
         {/each}
-        <option value={null} >Unassigned</option>
+        <option value={null}>Unassigned</option>
     </select>
+    <br>
     Available per default?
-    <input type="checkbox" bind:value={available_default}>
+    <input type="checkbox" bind:checked={available_default}>
 
-
+    <br>
     <button id="submit" on:click={serverRequest}>Add Task</button>
     <button id="cancel" on:click={hide}> cancel</button>
 </dialog>
