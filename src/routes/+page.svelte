@@ -42,8 +42,6 @@
             .subscribe()
     })
 
-
-
 </script>
 
 <svelte:head>
