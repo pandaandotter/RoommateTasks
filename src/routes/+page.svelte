@@ -2,6 +2,7 @@
     import {createClient} from '@supabase/supabase-js'
     import type {Database, Task, User} from "$lib/db-types";
     import {onMount} from "svelte";
+    import Dialogue from "$lib/Dialogue.svelte";
     let tasks: Task[] = [];
     let allUsers = new Map<string, User>();
     onMount(async () => {
@@ -87,6 +88,8 @@
         </tr>
     {/each}
 </table>
+
+<Dialogue/>
 
 ```
 
