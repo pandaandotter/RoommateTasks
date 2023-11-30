@@ -91,21 +91,7 @@
             alert("Error deleting task");
         }
     }
-    async function handleAssignment(taskId: number, assigneeId: string | null) {
-        console.log(taskId, assigneeId);
 
-        console.log({assignee: assigneeId})
-        const {data, error} = await supa
-            .from('tasks')
-            .update({assignee: assigneeId})
-            .match({id: taskId});
-
-        if (error) {
-            console.error('Error updating record:', error);
-        } else {
-            console.log('Record updated successfully:', data);
-        }
-    }
 
     async function handleUpdateOfField(task: Task, fieldName: string) {
         const {data, error} = await supa
@@ -217,10 +203,9 @@ Dialogueopen: {dialogueOpen}
                 </select>
             </td>
             <td>
-                <button on:click={()=>{serverRequest(task)}}>Done</button>
-                <button class="del" on:click={()=>{serverDelete(task)}}>Delete</button>
                 <button on:click={()=>{onDone(task)}} disabled={!task.available}>Mark Done</button>
                 <button on:click={()=>{onDone(task)}} disabled={!task.available}>I Did It</button>
+                <button class="del" on:click={()=>{serverDelete(task)}}>Delete</button>
             </td>
         </tr>
     {/each}
@@ -272,7 +257,7 @@ Dialogueopen: {dialogueOpen}
         transition: background-position .4s, background-size 0s;
     }
     .new:active {
-        box-shadow: 0 0 9e9q inset #0009;
+        box-shadow: 0 0 9em inset #0009;
         background-color: var(--c);
         color: #fff;
     }
@@ -295,7 +280,7 @@ Dialogueopen: {dialogueOpen}
         transition: background-position .4s, background-size 0s;
     }
     .del:active {
-        box-shadow: 0 0 9e9q inset #0009;
+        box-shadow: 0 0 9em inset #0009;
         background-color: var(--c);
         color: #fff;
     }
